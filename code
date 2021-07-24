@@ -1,0 +1,382 @@
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <conio.h>
+#include <fstream>
+#include <bits/stdc++.h>
+
+using namespace std;
+/* ######################
+CLASS USED IN PROJECT
+#########################
+*/
+class entry
+{
+    string cn;
+    string dest;
+    string ccode;
+    string date;
+    float wt;
+    float bill;
+    string from;
+    string expected_date;
+
+public:
+    void create_entry()
+    {
+        cout << "\nEntry Details :" << endl;
+        cout << "Enter the date :" << endl;
+        fflush(stdin);
+        getline(cin, date);
+        cout << "\n Enter the client code :" << endl;
+        fflush(stdin);
+        getline(cin, ccode);
+        cout << "\nenter the cong number :" << endl;
+        fflush(stdin);
+        getline(cin, cn);
+        cout << "Enter your current city : " << endl;
+        fflush(stdin);
+        getline(cin, from);
+        cout << " \nEnter destination : " << endl;
+        fflush(stdin);
+        getline(cin, dest);
+        cout << "\nEnter weight :" << endl;
+        cin >> wt;
+        cout << endl;
+        cout << "Enter the expected date : " << endl;
+        fflush(stdin);
+        getline(cin, expected_date);
+        cout << "\n Entry completed..." << endl;
+    }
+
+    void show_entry()
+    {
+        cout << "\nEnter the cong number : " << endl;
+        getline(cin, cn);
+        cout << "\nDate : ";
+        cout << date << endl;
+        cout << "\nClient code :";
+        cout << ccode << endl;
+        cout << "Current City : " << from;
+        cout << "\nDestination : ";
+        cout << dest << endl;
+        cout << "\nWeight(in kg) :";
+        cout << wt << endl;
+        cout << "Expected Date : " << expected_date << endl;
+        // show the bill here
+    }
+    void modify_entry()
+    {
+        cout << "\nEnter cong number : ";
+        fflush(stdin);
+        getline(cin, cn);
+        cout << "\nModify client code : ";
+        fflush(stdin);
+        getline(cin, ccode);
+        cout << "\nModify destination :";
+        fflush(stdin);
+        getline(cin, dest);
+        cout << "\nModify date : ";
+        fflush(stdin);
+        getline(cin, date);
+        cout << "\nModify weight : ";
+        fflush(stdin);
+        getline(cin, expected_date);
+        cin >> wt;
+    }
+    string retcn()
+    {
+        return cn;
+    }
+
+    void report()
+    {
+        cout << "\t" << cn << "\t";
+        cout << "\t" << date << "\t";
+        cout << ccode << "\t";
+        cout << "\t" << from << "\t";
+        cout << dest << "\t";
+        cout << wt << "\t";
+        cout << "\t" << expected_date << endl;
+    }
+
+}; //CLASS ENDS HERE
+/*####################
+  GLOBAL DECALARATION FOR STREM OBJECT, OBJECT
+  ###################*/
+fstream fp, fp1;
+entry dt;
+
+//*
+//    	function to write in file
+//**
+
+void write_entry()
+{
+    char ch;
+    fp.open("entry.dat", ios::out | ios::app | ios::binary);
+    do
+    {
+
+        dt.create_entry();
+        fp.write((char *)&dt, sizeof(dt));
+        cout << "\n\nDo you want to add more record..(y/n?)" << endl;
+        cin >> ch;
+    } while (ch == 'y' || ch == 'Y');
+    fp.close();
+}
+void display_spb(char n[])
+{
+    cout << "\nEntry DETAILS\n";
+    int flag = 0;
+    fp.open("entry.dat", ios::in);
+    while (fp.read((char *)&dt, sizeof(dt)))
+    {
+        if (dt.retcn().compare(n) == 0)
+        {
+            dt.show_entry();
+            flag = 1;
+        }
+    }
+
+    fp.close();
+    if (flag == 0)
+        cout << "\n\nEntry does not exist";
+    getch();
+}
+void modify_entry()
+{
+    char n[6];
+    int found = 0;
+
+    cout << "\n\n\tMODIFY Entry REOCORD.... ";
+    cout << "\n\n\tEnter The consignment no. of the entry:";
+    cin >> n;
+    fp.open("entry.dat", ios::in | ios::out);
+    while (fp.read((char *)&dt, sizeof(dt)) && found == 0)
+    {
+        if (dt.retcn().compare(n) == 0)
+        {
+            dt.show_entry();
+            cout << "\nEnter The New Details of consignment" << endl;
+            dt.modify_entry();
+            int pos = -1 * sizeof(dt);
+            fp.seekp(pos, ios::cur);
+            fp.write((char *)&dt, sizeof(entry));
+            cout << "\n\n\t Record Updated";
+            found = 1;
+        }
+    }
+
+    fp.close();
+    if (found == 0)
+        cout << "\n\n Record Not Found ";
+}
+void delete_entry()
+{
+    char n[6];
+
+    cout << "\n\n\n\tDELETE Entry ...";
+    cout << "\n\nEnter The cong no. of the Entry You Want To Delete : ";
+    cin >> n;
+    fp.open("entry.dat", ios::in | ios::out);
+    fstream fp2;
+    fp2.open("Temp.dat", ios::out);
+    fp.seekg(0, ios::beg);
+    while (fp.read((char *)&dt, sizeof(dt)))
+    {
+        if (dt.retcn().compare(n) != 0)
+        {
+            fp2.write((char *)&dt, sizeof(dt));
+        }
+    }
+
+    fp2.close();
+    fp.close();
+    remove("entry.dat");
+    rename("Temp.dat", "entry.dat");
+    cout << "\n\n\tRecord Deleted ..";
+}
+
+//*
+//    	function to display Entry list
+//**
+
+void display_allb()
+{
+
+    fp.open("entry.dat", ios::in);
+    if (!fp)
+    {
+        cout << endl;
+        cout << "ERROR!!! FILE COULD NOT BE OPEN ";
+
+        return;
+    }
+
+    cout << "\n\n\t\tEntry LIST\n\n";
+    cout << setw(110) << setfill('=') << "" << endl;
+    cout << "\tCong Number"
+         << "\t"
+         << "Date"
+         << "\t"
+         << "Client Code"
+         << "\t"
+         << "Current City"
+         << "\t"
+         << "Destination"
+         << "\t"
+         << "Weight"
+         << "\t\t"
+         << "Expected Date" << endl;
+    cout << setw(110) << setfill('=') << "" << endl;
+    while (fp.read((char *)&dt, sizeof(dt)))
+    {
+        dt.report();
+    }
+    fp.close();
+}
+
+void intro()
+{
+
+    cout << "COURIER ";
+
+    cout << "MANAGEMENT ";
+
+    cout << "SYSTEM";
+}
+//*
+//    	ADMINISTRATOR MENU FUNCTION
+//**
+
+void admin_menu()
+{
+    ifstream f12;
+    string req;
+    f12.open("request.txt");
+    int ch2;
+    do
+    {
+
+        cout << endl
+             << endl
+             << endl;
+
+        cout << setw(24) << setfill('-') << "ADMINISTRATOR MENU" << setw(6) << setfill('-') << "";
+        cout << "\n\n\t1.Enter Data ";
+        cout << "\n\n\t2.DISPLAY ALL Entries ";
+        cout << "\n\n\t3.DISPLAY SPECIFIC Entry ";
+        cout << "\n\n\t4.MODIFY Entry ";
+        cout << "\n\n\t5.DELETE Entry ";
+        cout << "\n\n\t6.Read Requests";
+        cout << "\n\n\t7.BACK TO MAIN MENU";
+        cout << "\n\n\tPlease Enter Your Choice (1-7) ";
+        cin >> ch2;
+        switch (ch2)
+        {
+        case 1:
+            write_entry();
+            break;
+        case 2:
+            display_allb();
+            break;
+        case 3:
+        {
+            char num[6];
+
+            cout << "\n\n\tPlease Enter The Cong No. ";
+            cin >> num;
+            display_spb(num);
+            break;
+        }
+        case 4:
+            modify_entry();
+            break;
+        case 5:
+            delete_entry();
+            break;
+        case 6:
+        {
+            f12.seekg(0);
+            while (f12 >> req)
+            {
+                cout << req << endl;
+            }
+            f12.close();
+            break;
+        }
+        }
+    } while (ch2 <= 6);
+}
+void user_menu()
+{
+
+    int d;
+    ofstream f;
+    f.open("request.txt");
+    cout << "1.Dislpay Order Details" << endl;
+    cout << "2.Place a request" << endl;
+    cout << "Please Select between 2 choices(type 1 or 2)" << endl;
+    cin >> d;
+    switch (d)
+    {
+    case 1:
+    {
+        char num[6];
+        cout << "\n\n\tPlease Enter The Cong No. ";
+        cin >> num;
+        display_spb(num);
+        break;
+    }
+    case 2:
+    {
+        string req;
+        cout << "Enter your request" << endl;
+        cin >> req;
+        f << req;
+        f.close();
+        break;
+    }
+    }
+}
+
+//*
+//    	THE MAIN FUNCTION OF PROGRAM
+//**
+
+int main()
+{
+    int d;
+    intro();
+    do
+    {
+
+        cout << "\n\n\n\tMAIN MENU";
+        cout << "\n\n\t01. User Menu ";
+        cout << "\n\n\t02. Contact Details";
+        cout << "\n\n\t03. ADMINISTRATOR MENU";
+        cout << "\n\n\t04. EXIT";
+        cout << "\n\n\tPlease Select Your Option (1-4) ";
+        cin >> d;
+        switch (d)
+        {
+        case 1:
+            user_menu();
+            break;
+        case 2:
+           cout<<"Mobile no.:**********";
+            break;
+        case 3:
+            admin_menu();
+            break;
+        case 4:
+            exit(0);
+        }
+    } while (d <= 4);
+    return 0;
+}
+
+// *
+//    			END OF PROJECT
+// **
